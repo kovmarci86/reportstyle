@@ -1,0 +1,133 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mkovacs</groupId>
+	<artifactId>reportstyle</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Report Style</name>
+	<description>
+			Generates codeing conventions documentation from CheckStyle configuration.
+			Converts a checkstyle XML configuration file to an HTML report using XSLT transformations, 
+			then replaces the messages to localized texts using Maven filter plugin.
+			It uses the eclipse-cs plugin resource files to show detailed messages.</description>
+	<properties>
+		<resources.directory>src/main/resources</resources.directory>
+		<stylesheet.path>${resources.directory}/generate/report_gen.xslt</stylesheet.path>
+		<checkstyle-rules.path>${resources.directory}/checkstyle/</checkstyle-rules.path>
+	</properties>
+
+	<build>
+		<filters>
+			<filter>${resources.directory}/i18n/checkstyle-metadata.properties</filter>
+		</filters>
+
+		<resources>
+			<resource>
+				<directory>${project.build.directory}/generated-resources/xml/xslt</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.html</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>process-language</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>
+								resources
+							</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/filtered-resources</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-required-files</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>
+								copy-resources
+							</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${resources.directory}/report</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>**/*</include>
+									</includes>
+								</resource>
+							</resources>
+							<outputDirectory>${project.build.directory}/final-resources/reportstyle</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>move-result-to-final</id>
+						<goals>
+							<goal>
+								copy-resources
+							</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/filtered-resources</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>**/*.html</include>
+										<include>**/*.xml</include>
+									</includes>
+								</resource>
+							</resources>
+							<outputDirectory>${project.build.directory}/final-resources/reportstyle</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<phase>
+							validate
+						</phase>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<forceCreation>true</forceCreation>
+					<transformationSets>
+						<transformationSet>
+							<dir>${checkstyle-rules.path}</dir>
+							<stylesheet>${stylesheet.path}</stylesheet>
+							<fileMappers>
+								<fileMapper
+									implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+									<targetExtension>.html</targetExtension>
+								</fileMapper>
+							</fileMappers>
+						</transformationSet>
+					</transformationSets>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

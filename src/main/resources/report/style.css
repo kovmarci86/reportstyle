@@ -1,0 +1,14 @@
+h1 {
+	margin-top: 50px;
+}
+
+table td{
+	padding: 5px auto;
+}
+
+table thead td {
+	background: black;
+	color: white;
+	text-align: left;
+	min-width: 300px;
+}
